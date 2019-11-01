@@ -1,0 +1,18 @@
+version: '3'
+services:
+  db:
+    build: ./mysql
+    container_name: mysql-container
+    ports:
+      - "13306:3306"
+    volumes:
+      - ./mysql/initdb.d:/docker-entrypoint-initdb.d
+      - ./mysql/conf.d/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./mysql/data:/var/lib/mysql
+      - ./log/mysql:/var/log/mysql
+    environment:
+      MYSQL_DATABASE: sample_app
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: himitu
+      MYSQL_ROOT_PASSWORD: himitu
+      TZ: "Asia/Tokyo"
