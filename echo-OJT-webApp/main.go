@@ -4,16 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/konosato-idcf/study-golang/echo-OJT-webApp/models"
-	"github.com/volatiletech/sqlboiler/boil"
-	"strconv"
-
-	// Import this so we don't have to use qm.Limit etc.
-	//. "github.com/volatiletech/sqlboiler/queries/qm"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/konosato-idcf/study-golang/echo-OJT-webApp/models"
 	"github.com/labstack/echo/v4"
+	"github.com/volatiletech/sqlboiler/boil"
 	"gopkg.in/go-playground/validator.v9"
 	"net/http"
+	"strconv"
 )
 
 type User struct {
