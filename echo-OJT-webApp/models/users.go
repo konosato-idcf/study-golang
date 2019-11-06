@@ -31,6 +31,11 @@ type User struct {
 	L userL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
+type Pilot struct {
+	Name  string `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Email string `boil:"email" json:"email" toml:"email" yaml:"email"`
+}
+
 var UserColumns = struct {
 	ID    string
 	Name  string

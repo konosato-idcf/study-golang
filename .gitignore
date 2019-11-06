@@ -1,3 +1,4 @@
 .idea
 echo-OJT-webApp/log
 echo-OJT-webApp/mysql/data
+/install-realize.sh
