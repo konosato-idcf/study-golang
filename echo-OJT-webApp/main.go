@@ -19,12 +19,12 @@ type User struct {
 	Email string `boil:"email" json:"email" toml:"email" yaml:"email" validate:"required,email"`
 }
 
-type CustomValidator struct {
-	validator *validator.Validate
+type Message struct {
+	Message string `json:"message"`
 }
 
-func (cv *CustomValidator) Validate(i interface{}) error {
-	return cv.validator.Struct(i)
+type CustomValidator struct {
+	validator *validator.Validate
 }
 
 func main() {
@@ -37,19 +37,8 @@ func main() {
 		e.Logger.Fatal(err.Error())
 	}
 
-	// GET
-	/*e.GET("/", func(c echo.Context) error {
-		ctx := context.Background()
-		users, err := models.Users().All(ctx, db)
-		if err != nil {
-			e.Logger.Fatal(err.Error())
-		}
-		for i, v := range users {
-			fmt.Println(i, v)
-			fmt.Printf("%#v", v)
-		}
-		return c.String(http.StatusOK, "Hello, World!")
-	})*/
+	// GET "/" Return "Hello, World!"
+	//e.GET("/", helloWorld)
 
 	// GET JSON response
 	e.GET("/users", func(c echo.Context) error {
@@ -128,8 +117,10 @@ func main() {
 		ctx := context.Background()
 		findUser, err := models.FindUser(ctx, db, id)
 		if err != nil {
-			//err = doError(err.Error())
-			return c.JSON(http.StatusNotFound, "The user id:"+strconv.Itoa(id)+" does not exist.")
+			message := &Message{
+				Message: fmt.Sprintf("The user id:%d does not exist.", id),
+			}
+			return c.JSON(http.StatusNotFound, message)
 		}
 
 		// Update
@@ -157,8 +148,10 @@ func main() {
 		ctx := context.Background()
 		findUser, err := models.FindUser(ctx, db, id)
 		if err != nil {
-			//err = doError(err.Error())
-			return c.JSON(http.StatusNotFound, "The user id:"+strconv.Itoa(id)+" does not exist.")
+			message := &Message{
+				Message: fmt.Sprintf("The user id:%d does not exist.", id),
+			}
+			return c.JSON(http.StatusNotFound, message)
 		}
 
 		// Delete
@@ -172,3 +165,19 @@ func main() {
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
+
+func (cv *CustomValidator) Validate(i interface{}) error {
+	return cv.validator.Struct(i)
+}
+
+/*func helloWorld(c echo.Context, e echo.Echo, db *sql.DB, ctx context.Context) error {
+	users, err := models.Users().All(ctx, db)
+	if err != nil {
+		e.Logger.Fatal(err.Error())
+	}
+	for i, v := range users {
+		fmt.Println(i, v)
+		fmt.Printf("%#v", v)
+	}
+	return c.String(http.StatusOK, "Hello, World!")
+}*/
