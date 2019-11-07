@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/konosato-idcf/study-golang/echo-OJT-webApp/user/infra/models"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"net/http"
 )
 
@@ -16,7 +16,7 @@ func NewUsersHandler(user UserInterface) *UsersHandler {
 	return &UsersHandler{User: user}
 }
 
-func (u UsersHandler) Index(c echo.Context) error {
+func (u *UsersHandler) Index(c echo.Context) error {
 	ctx := context.Background()
 	users, err := u.User.All(ctx)
 	if err != nil {
