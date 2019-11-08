@@ -7,24 +7,19 @@ import (
 	"net/http"
 )
 
-type TmpUser struct {
-	ID    int    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name  string `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Email string `boil:"email" json:"email" toml:"email" yaml:"email"`
-}
 
 type UsersHandler struct {
-	User UserInterface
+	Users UsersInterface
 }
 
-func NewUsersHandler(user UserInterface) *UsersHandler {
-	return &UsersHandler{User: user}
+func NewUsersHandler(user UsersInterface) *UsersHandler {
+	return &UsersHandler{Users: user}
 }
 
 // GET("/users", userHandler.Index)
 func (h *UsersHandler) Index(c echo.Context) error {
 	ctx := context.Background()
-	users, err := h.User.All(ctx)
+	users, err := h.Users.All(ctx)
 	if err != nil {
 		c.Logger().Fatal(err.Error())
 	}
@@ -59,26 +54,23 @@ func (h *UsersHandler) Index(c echo.Context) error {
 ////$ curl -v -F "name=Yamada Hanako" -F "email=hyamada@labstack.com" http://localhost:1323/users
 //
 //
-//// POST("/users", userHandler.Create)
-//func (u UsersHandler) Create (c echo.Context) error {
-//	u := new(User)
-//	if err := c.Bind(u); err != nil {
-//		return err
-//	}
-//	if err = c.Validate(u); err != nil {
-//		return c.JSON(http.StatusBadRequest, err.Error())
-//	}
-//
-//	ctx := context.Background()
-//	var user models.User
-//	user.Name = u.Name
-//	user.Email = u.Email
-//	err = user.Insert(ctx, db, boil.Whitelist("name", "email"))
-//	if err != nil {
-//		e.Logger.Fatal(err.Error())
-//	}
-//	return c.JSON(http.StatusCreated, user)
-//}
+// POST("/users", userHandler.Create)
+func (h UsersHandler) Create (c echo.Context) error {
+	u := new(User)
+	if err := c.Bind(u); err != nil {
+		return err
+	}
+	if err := c.Validate(u); err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	ctx := context.Background()
+	u, err := h.Users.Create(ctx, u)
+	if err != nil {
+		c.Logger().Fatal(err.Error())
+	}
+	return c.JSON(http.StatusCreated, u)
+}
 //// $ curl http://localhost:1323/users -v -X POST -H "Content-Type: application/json" -d '{"name":"aaa", "email":"aaa@idcf.jp"}'
 //// $ curl http://localhost:1323/users -v -X POST -H "Content-Type: application/json" -d '{"name":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "email":"kotaro@idcf.jp"}'
 //// -> "Key: 'User.Name' Error:Field validation for 'Name' failed on the 'lt' tag"

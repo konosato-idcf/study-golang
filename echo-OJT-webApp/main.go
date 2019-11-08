@@ -36,7 +36,7 @@ func main() {
 	userHandler := user.NewUsersHandler(u)
 
 	e.GET("/users", userHandler.Index)
-	//e.POST("/users", userHandler.Create)
+	e.POST("/users", userHandler.Create)
 	//e.PUT("/users/:id", userHandler.Update)
 	//e.DELETE("/users/:id", userHandler.Delete)
 
