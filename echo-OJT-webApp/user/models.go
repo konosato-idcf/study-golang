@@ -10,10 +10,13 @@ import (
 type UsersInterface interface {
 	All(context.Context) (models.UserSlice, error)
 	Create(context.Context, *User) (*User, error)
+	FindById(context.Context, int) (*User, error)
+	Update(context.Context, *User) (int64, error)
+	Delete(context.Context, *User) (int64, error)
 }
 
 func NewUser(db *sql.DB) *Users {
-	return &Users{db : db}
+	return &Users{db: db}
 }
 
 type Users struct {
@@ -40,4 +43,42 @@ func (u Users) Create(ctx context.Context, user *User) (*User, error) {
 	}
 	user.ID = v.ID
 	return user, nil
+}
+
+func (u Users) FindById(ctx context.Context, id int) (*User, error) {
+	v, err := models.FindUser(ctx, u.db, id)
+	if err != nil {
+		return nil, err
+	}
+	//var user *User
+	//user := &User{}
+	user := new(User)
+	user.ID = v.ID
+	user.Name = v.Name
+	user.Email = v.Email
+	return user, nil
+}
+
+func (u Users) Update(ctx context.Context, user *User) (int64, error) {
+	var v models.User
+	v.ID = user.ID
+	v.Name = user.Name
+	v.Email = user.Email
+	rowsAff, err := v.Update(ctx, u.db, boil.Infer())
+	if err != nil {
+		return rowsAff, err
+	}
+	return rowsAff, nil
+}
+
+func (u Users) Delete(ctx context.Context, user *User) (int64, error) {
+	var v models.User
+	v.ID = user.ID
+	v.Name = user.Name
+	v.Email = user.Email
+	rowsAff, err := v.Delete(ctx, u.db)
+	if err != nil {
+		return rowsAff, err
+	}
+	return rowsAff, nil
 }

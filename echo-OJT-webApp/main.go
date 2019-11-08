@@ -8,9 +8,12 @@ import (
 	"gopkg.in/go-playground/validator.v9"
 )
 
-
 type CustomValidator struct {
 	validator *validator.Validate
+}
+
+func (cv *CustomValidator) Validate(i interface{}) error {
+	return cv.validator.Struct(i)
 }
 
 func main() {
@@ -23,35 +26,17 @@ func main() {
 		e.Logger.Fatal(err.Error())
 	}
 
-	// GET "/" Return "Hello, World!"
-	//e.GET("/", helloWorld)
-
 	// ユーザーテーブルにアクセスするモデル
 	u := user.NewUser(db)
 
 	// ハンドラーの生成
 	userHandler := user.NewUsersHandler(u)
 
+	// ルーティング
 	e.GET("/users", userHandler.Index)
 	e.POST("/users", userHandler.Create)
-	//e.PUT("/users/:id", userHandler.Update)
-	//e.DELETE("/users/:id", userHandler.Delete)
+	e.PUT("/users/:id", userHandler.Update)
+	e.DELETE("/users/:id", userHandler.Delete)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
-
-func (cv *CustomValidator) Validate(i interface{}) error {
-	return cv.validator.Struct(i)
-}
-
-/*func helloWorld(c echo.Context, e echo.Echo, db *sql.DB, ctx context.Context) error {
-	users, err := models.Users().All(ctx, db)
-	if err != nil {
-		e.Logger.Fatal(err.Error())
-	}
-	for i, v := range users {
-		fmt.Println(i, v)
-		fmt.Printf("%#v", v)
-	}
-	return c.String(http.StatusOK, "Hello, World!")
-}*/
