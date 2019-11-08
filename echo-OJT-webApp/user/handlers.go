@@ -5,8 +5,12 @@ import (
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
+	"strconv"
 )
 
+type Message struct {
+	Message string `json:"message"`
+}
 
 type UsersHandler struct {
 	Users UsersInterface
@@ -111,6 +115,50 @@ func (h UsersHandler) Create (c echo.Context) error {
 //	return c.JSON(http.StatusOK, findUser)
 //}
 //// $ curl http://localhost:1323/users/1 -v -X PUT -H "Content-Type: application/json" -d '{"name":"konosato", "email":"konosato@idcf.jp"}'
+
+
+// PUT("/users/:id", userHandler.Update)
+func (h UsersHandler) Update (c echo.Context) error {
+	// Validate
+	u := new(User)
+	if err := c.Bind(u); err != nil {
+		return err
+	}
+	if err := c.Validate(u); err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	// Retrieve data
+	var id int
+	id, _ = strconv.Atoi(c.Param("id"))
+	ctx := context.Background()
+
+	user, err  := h.Users.FindById(ctx, id)
+	if err != nil {
+		message := &Message{
+			Message: fmt.Sprintf("The user id:%d does not exist.", id),
+		}
+		return c.JSON(http.StatusNotFound, message)
+	}
+
+	// Update
+	user.Name = u.Name
+	user.Email = u.Email
+	rowsAff, err := h.Users.Update(ctx, user)
+	if rowsAff == 0 {
+		return c.String(http.StatusTeapot, "Differences are not found.")
+	}
+
+	return c.JSON(http.StatusOK, user)
+}
+//// $ curl http://localhost:1323/users/1 -v -X PUT -H "Content-Type: application/json" -d '{"name":"konosato", "email":"konosato@idcf.jp"}'
+
+
+
+
+
+
+
 //
 //// DELETE("/users/:id", userHandler.Delete)
 //func (u UsersHandler) Delete (c echo.Context) error {

@@ -8,9 +8,6 @@ import (
 	"gopkg.in/go-playground/validator.v9"
 )
 
-type Message struct {
-	Message string `json:"message"`
-}
 
 type CustomValidator struct {
 	validator *validator.Validate
