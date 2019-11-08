@@ -3,10 +3,15 @@ package user
 import (
 	"context"
 	"fmt"
-	"github.com/konosato-idcf/study-golang/echo-OJT-webApp/user/infra/models"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
+
+type TmpUser struct {
+	ID    int    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name  string `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Email string `boil:"email" json:"email" toml:"email" yaml:"email"`
+}
 
 type UsersHandler struct {
 	User UserInterface
@@ -16,16 +21,18 @@ func NewUsersHandler(user UserInterface) *UsersHandler {
 	return &UsersHandler{User: user}
 }
 
-func (u *UsersHandler) Index(c echo.Context) error {
+// GET("/users", userHandler.Index)
+func (h *UsersHandler) Index(c echo.Context) error {
 	ctx := context.Background()
-	users, err := u.User.All(ctx)
+	users, err := h.User.All(ctx)
 	if err != nil {
 		c.Logger().Fatal(err.Error())
 	}
-	userList := make([]*models.User, 0)
+	userList := make([]*User, 0)
 	for _, v := range users {
 		//fmt.Printf("%#v\n", v)
-		u := &models.User{}
+		u := &User{}
+		//u := &models.User{}
 		u.ID = v.ID
 		u.Name = v.Name
 		u.Email = v.Email
@@ -34,28 +41,10 @@ func (u *UsersHandler) Index(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, userList)
 }
-//// GET JSON response
-//e.GET("/users", func(c echo.Context) error {
-//	ctx := context.Background()
-//	users, err := models.Users().All(ctx, db)
-//	if err != nil {
-//		e.Logger.Fatal(err.Error())
-//	}
-//	userList := make([]*models.User, 0)
-//	for _, v := range users {
-//		//fmt.Printf("%#v\n", v)
-//		u := &models.User{}
-//		u.ID = v.ID
-//		u.Name = v.Name
-//		u.Email = v.Email
-//		fmt.Printf("%#v\n", u)
-//		userList = append(userList, u)
-//	}
-//	return c.JSON(http.StatusOK, userList)
-//})
+
 //
-//// POST/Form insert user info.
-///*e.POST("/users", func(c echo.Context) error {
+//// POST("/users", userHandler.Create) Form
+//func (u UsersHandler) Create (c echo.Context) error {
 //	ctx := context.Background()
 //	var p models.User
 //	p.Name = c.FormValue("name")
@@ -66,12 +55,12 @@ func (u *UsersHandler) Index(c echo.Context) error {
 //	}
 //
 //	return c.String(http.StatusCreated, "name:" + p.Name + ", email:" + p.Email)
-//})
+//}
 ////$ curl -v -F "name=Yamada Hanako" -F "email=hyamada@labstack.com" http://localhost:1323/users
-//*/
 //
-//// POST /JSON insert user info.
-//e.POST("/users", func(c echo.Context) (err error) {
+//
+//// POST("/users", userHandler.Create)
+//func (u UsersHandler) Create (c echo.Context) error {
 //	u := new(User)
 //	if err := c.Bind(u); err != nil {
 //		return err
@@ -89,13 +78,15 @@ func (u *UsersHandler) Index(c echo.Context) error {
 //		e.Logger.Fatal(err.Error())
 //	}
 //	return c.JSON(http.StatusCreated, user)
-//})
+//}
 //// $ curl http://localhost:1323/users -v -X POST -H "Content-Type: application/json" -d '{"name":"aaa", "email":"aaa@idcf.jp"}'
 //// $ curl http://localhost:1323/users -v -X POST -H "Content-Type: application/json" -d '{"name":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "email":"kotaro@idcf.jp"}'
 //// -> "Key: 'User.Name' Error:Field validation for 'Name' failed on the 'lt' tag"
 //
-//// PUT /users/:id Update user.
-//e.PUT("/users/:id", func(c echo.Context) (err error) {
+//
+//
+//// PUT("/users/:id", userHandler.Update)
+//func (u UsersHandler) Update (c echo.Context) error {
 //	// Validate
 //	u := new(User)
 //	if err := c.Bind(u); err != nil {
@@ -126,11 +117,11 @@ func (u *UsersHandler) Index(c echo.Context) error {
 //	}
 //
 //	return c.JSON(http.StatusOK, findUser)
-//})
+//}
 //// $ curl http://localhost:1323/users/1 -v -X PUT -H "Content-Type: application/json" -d '{"name":"konosato", "email":"konosato@idcf.jp"}'
 //
-//// DELETE /users/:id Delete user.
-//e.DELETE("/users/:id", func(c echo.Context) (err error) {
+//// DELETE("/users/:id", userHandler.Delete)
+//func (u UsersHandler) Delete (c echo.Context) error {
 //	u := new(User)
 //	if err := c.Bind(u); err != nil {
 //		return err

@@ -8,12 +8,6 @@ import (
 	"gopkg.in/go-playground/validator.v9"
 )
 
-type User struct {
-	ID    int    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name  string `boil:"name" json:"name" toml:"name" yaml:"name" validate:"required,gt=0,lt=45"`
-	Email string `boil:"email" json:"email" toml:"email" yaml:"email" validate:"required,email"`
-}
-
 type Message struct {
 	Message string `json:"message"`
 }
