@@ -41,6 +41,8 @@ func (h *UsersHandler) Index(c echo.Context) error {
 	return c.JSON(http.StatusOK, userList)
 }
 
+//$ curl http://localhost:1323/users -v
+
 // POST("/users", userHandler.Create) Catch parameter through form
 //func (u UsersHandler) Create (c echo.Context) error {
 //	ctx := context.Background()
