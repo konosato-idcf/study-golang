@@ -1,27 +1,23 @@
 package main
 
 import (
-	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/konosato-idcf/study-golang/echo-OJT-webApp/user"
 	"github.com/labstack/echo/v4"
-	"gopkg.in/go-playground/validator.v9"
 )
-
-type CustomValidator struct {
-	validator *validator.Validate
-}
-
-func (cv *CustomValidator) Validate(i interface{}) error {
-	return cv.validator.Struct(i)
-}
 
 func main() {
 	e := echo.New()
-	e.Validator = &CustomValidator{validator: validator.New()}
+	e.Validator = user.NewCustomValidator()
 
 	// Open handle to database like normal
-	db, err := sql.Open("mysql", "admin:himitu@tcp(localhost:13306)/sample_app")
+	db, err := user.ConnectDatabase(user.Config{
+		Username: "admin",
+		Password: "himitu",
+		Host:     "loaclchost",
+		Database: "sample_app",
+		Port:     13306,
+	})
 	if err != nil {
 		e.Logger.Fatal(err.Error())
 	}
