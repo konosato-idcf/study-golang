@@ -95,7 +95,7 @@ func (h UsersHandler) Update(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		message := &Message{
-			Message: fmt.Sprintf("ID must be numeric."),
+			Message: fmt.Sprintf("strconv.ParseInt: parsing \"a\": invalid syntax"),
 		}
 		return c.JSON(http.StatusBadRequest, message)
 	}
