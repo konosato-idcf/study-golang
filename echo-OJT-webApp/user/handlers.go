@@ -94,7 +94,10 @@ func (h UsersHandler) Update(c echo.Context) error {
 	// Retrieve data
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return err
+		message := &Message{
+			Message: fmt.Sprintf("ID must be numeric."),
+		}
+		return c.JSON(http.StatusBadRequest, message)
 	}
 	ctx := context.Background()
 	_, err = h.Users.FindById(ctx, id)
@@ -124,7 +127,10 @@ func (h UsersHandler) Delete(c echo.Context) error {
 	// Retrieve data
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return err
+		message := &Message{
+			Message: fmt.Sprintf("ID must be numeric."),
+		}
+		return c.JSON(http.StatusBadRequest, message)
 	}
 	ctx := context.Background()
 	u, err := h.Users.FindById(ctx, id)
