@@ -14,7 +14,7 @@ func main() {
 	db, err := user.ConnectDatabase(user.Config{
 		Username: "admin",
 		Password: "himitu",
-		Host:     "loaclchost",
+		Host:     "localhost",
 		Database: "sample_app",
 		Port:     13306,
 	})
