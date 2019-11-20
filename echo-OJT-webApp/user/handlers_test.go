@@ -37,7 +37,16 @@ func GetEchoContext(path string, requestMethod string, requestJson string) (echo
 }
 
 func TestUsersHandler_Create_Validation(t *testing.T) {
-	assert.Equal(t, http.StatusCreated, 201)
+	// 1 character name
+	requestJson := `{"name":"k","email":"k@idcf.jp"}`
+	c, rec := GetEchoContext("/user", http.MethodPost, requestJson)
+	u := new(User)
+	if err := c.Bind(u); err != nil {
+		return err
+	}
+	if err := c.Validate(u); err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
 }
 
 // バリデーションチェックが全て通った場合、ユーザーが登録される。
