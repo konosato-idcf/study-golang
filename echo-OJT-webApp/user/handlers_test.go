@@ -3,10 +3,13 @@ package user
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/konosato-idcf/study-golang/echo-OJT-webApp/user/infra/models"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
+	"github.com/volatiletech/sqlboiler/queries/qm"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -36,6 +39,8 @@ func GetEchoContext(path string, requestMethod string, requestJson string) (echo
 	return c, rec
 }
 
+// https://github.com/golang/go/wiki/TableDrivenTests
+// https://qiita.com/yut-kt/items/5f9eb752f40d4d2a2e97
 func TestUsersHandler_Create_Validation(t *testing.T) {
 	// 1 character name
 	requestJson := `{"name":"k","email":"k@idcf.jp"}`
@@ -58,24 +63,45 @@ func TestUsersHandler_Create(t *testing.T) {
 	defer deleteUser(testDb)
 
 	requestJson := `{"name":"Joe","email":"joe@idcf.jp"}`
-	c, rec := GetEchoContext("/user", http.MethodPost, requestJson)
+	c, rec := GetEchoContext("/users/:id", http.MethodPost, requestJson)
 
 	u := NewUser(testDb)
 	h := NewUsersHandler(u)
 
 	// Assertion
 	// want := `{"id":0,"name":"Joe","email":"joe@idcf.jp"}`
+	want := &User{
+		Name:  "Joe",
+		Email: "joe@idcf.jp",
+	}
+
 	if assert.NoError(t, h.Create(c)) {
 		assert.Equal(t, http.StatusCreated, rec.Code)
-		// assert.Equal(t, want, strings.TrimSpace(rec.Body.String()))
 
-		// カラムごとの確認
+		responseUser := &User{}
+		json.Unmarshal(rec.Body.Bytes(), responseUser)
+		// fmt.Println(responseUser)
+		// assert.Equal(t, want, strings.TrimSpace(rec.Body.String()))
+		assert.GreaterOrEqual(t, responseUser.ID, 0)
+		assert.Equal(t, want.Name, responseUser.Name)
+		assert.Equal(t, want.Email, responseUser.Email)
+
+		// DBのユーザーテーブルの値の確認
+		ctx := context.Background()
+		user, err := models.Users(qm.Where("id=?", responseUser.ID)).One(ctx, testDb)
+		if err != nil {
+			log.Fatal(err)
+		}
+		assert.Equal(t, want.Name, user.Name)
+		assert.Equal(t, want.Email, user.Email)
 	}
 }
 
 //func TestUsersHandler_Update(t *testing.T) {
 //	requestJson := `{"name":"Joe","email":"joe2@idcf.jp"}`
-//	c, rec := GetEchoContext("/user", http.MethodPut, requestJson)
+//	c, rec := GetEchoContext("/users/:id", http.MethodPut, requestJson)
+//  c.SetParamNames("id")
+//  c.SetParamValues(1)
 //
 //	ctrl := gomock.NewController(t)
 //	defer ctrl.Finish()
