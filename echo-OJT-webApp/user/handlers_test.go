@@ -4,12 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/konosato-idcf/study-golang/echo-OJT-webApp/user/infra/models"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
-	"github.com/volatiletech/sqlboiler/queries/qm"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -42,60 +41,75 @@ func GetEchoContext(path string, requestMethod string, requestJson string) (echo
 // https://github.com/golang/go/wiki/TableDrivenTests
 // https://qiita.com/yut-kt/items/5f9eb752f40d4d2a2e97
 func TestUsersHandler_Create_Validation(t *testing.T) {
-	// 1 character name
-	requestJson := `{"name":"k","email":"k@idcf.jp"}`
-	c, rec := GetEchoContext("/user", http.MethodPost, requestJson)
-	u := new(User)
-	if err := c.Bind(u); err != nil {
-		return err
+	casesOk := []struct {
+		Name  string `json:"name"`
+		Email string `json:"email"`
+	}{
+		{"k", "k@gmail.com"},
+		{"aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeee",
+			"aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeee@idcf.jp"},
 	}
-	if err := c.Validate(u); err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+	for _, tt := range casesOk {
+		bytes, err := json.Marshal(tt)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(bytes)
+		requestJson := string(bytes)
+		c, rec := GetEchoContext("/user", http.MethodPost, requestJson)
+		u := new(User)
+		if assert.NoError(t, c.Bind(u)) {
+			assert.Equal(t, http.StatusOK, rec.Code)
+		}
+		if assert.NoError(t, c.Validate(u)) {
+			assert.Equal(t, http.StatusOK, rec.Code)
+		}
 	}
 }
 
 // バリデーションチェックが全て通った場合、ユーザーが登録される。
-func TestUsersHandler_Create(t *testing.T) {
-	testDb, err := ConnectDatabase(testConfig)
-	if err != nil {
-		panic(err)
-	}
-	defer deleteUser(testDb)
-
-	requestJson := `{"name":"Joe","email":"joe@idcf.jp"}`
-	c, rec := GetEchoContext("/users/:id", http.MethodPost, requestJson)
-
-	u := NewUser(testDb)
-	h := NewUsersHandler(u)
-
-	// Assertion
-	// want := `{"id":0,"name":"Joe","email":"joe@idcf.jp"}`
-	want := &User{
-		Name:  "Joe",
-		Email: "joe@idcf.jp",
-	}
-
-	if assert.NoError(t, h.Create(c)) {
-		assert.Equal(t, http.StatusCreated, rec.Code)
-
-		responseUser := &User{}
-		json.Unmarshal(rec.Body.Bytes(), responseUser)
-		// fmt.Println(responseUser)
-		// assert.Equal(t, want, strings.TrimSpace(rec.Body.String()))
-		assert.GreaterOrEqual(t, responseUser.ID, 0)
-		assert.Equal(t, want.Name, responseUser.Name)
-		assert.Equal(t, want.Email, responseUser.Email)
-
-		// DBのユーザーテーブルの値の確認
-		ctx := context.Background()
-		user, err := models.Users(qm.Where("id=?", responseUser.ID)).One(ctx, testDb)
-		if err != nil {
-			log.Fatal(err)
-		}
-		assert.Equal(t, want.Name, user.Name)
-		assert.Equal(t, want.Email, user.Email)
-	}
-}
+//func TestUsersHandler_Create(t *testing.T) {
+//	testDb, err := ConnectDatabase(testConfig)
+//	if err != nil {
+//		panic(err)
+//	}
+//	defer deleteUser(testDb)
+//
+//	requestJson := `{"name":"Joe","email":"joe@idcf.jp"}`
+//	c, rec := GetEchoContext("/users/:id", http.MethodPost, requestJson)
+//
+//	u := NewUser(testDb)
+//	h := NewUsersHandler(u)
+//
+//	// Assertion
+//	// want := `{"id":0,"name":"Joe","email":"joe@idcf.jp"}`
+//	want := &User{
+//		Name:  "Joe",
+//		Email: "joe@idcf.jp",
+//	}
+//
+//	if assert.NoError(t, h.Create(c)) {
+//		assert.Equal(t, http.StatusCreated, rec.Code)
+//
+//		responseUser := &User{}
+//		json.Unmarshal(rec.Body.Bytes(), responseUser)
+//		// fmt.Println(responseUser)
+//		// assert.Equal(t, want, strings.TrimSpace(rec.Body.String()))
+//		assert.GreaterOrEqual(t, responseUser.ID, 0)
+//		assert.Equal(t, want.Name, responseUser.Name)
+//		assert.Equal(t, want.Email, responseUser.Email)
+//
+//		// DBのユーザーテーブルの値の確認
+//		ctx := context.Background()
+//		user, err := models.Users(qm.Where("id=?", responseUser.ID)).One(ctx, testDb)
+//		if err != nil {
+//			log.Fatal(err)
+//		}
+//		assert.Equal(t, want.Name, user.Name)
+//		assert.Equal(t, want.Email, user.Email)
+//	}
+//}
 
 //func TestUsersHandler_Update(t *testing.T) {
 //	requestJson := `{"name":"Joe","email":"joe2@idcf.jp"}`

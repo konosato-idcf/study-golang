@@ -25,8 +25,8 @@ type Users struct {
 
 type User struct {
 	ID    int    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name  string `boil:"name" json:"name" toml:"name" yaml:"name" validate:"required,gt=1,lt=45"`
-	Email string `boil:"email" json:"email" toml:"email" yaml:"email" validate:"required,gt=1,lt=255,email"`
+	Name  string `boil:"name" json:"name" toml:"name" yaml:"name" validate:"required,gt=0,lt=46"`
+	Email string `boil:"email" json:"email" toml:"email" yaml:"email" validate:"required,gt=0,lt=256,email"`
 }
 
 func (u Users) All(ctx context.Context) (models.UserSlice, error) {
