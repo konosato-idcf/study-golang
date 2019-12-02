@@ -11,10 +11,12 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 	"github.com/stretchr/testify/assert"
+	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries/qm"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -40,33 +42,42 @@ func GetEchoContext(path string, requestMethod string, requestJson string) (echo
 
 	return c, rec
 }
+    type user struct {
+        Name  string `json:"name"`
+        Email string `json:"email"`
+    }
 
 // https://github.com/golang/go/wiki/TableDrivenTests
 // https://qiita.com/yut-kt/items/5f9eb752f40d4d2a2e97
 func TestUsersHandler_Create_Validation(t *testing.T) {
 	// 種別：正常
-	casesOk := []struct {
-		Name  string `json:"name"`
-		Email string `json:"email"`
-	}{
-		{"k", "k@gmail.com"},
-		{"aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeee",
-			"aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeee@idcf.jp"},
-		{"longEmail",
-			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@idcf.jp"},
-	}
-	for _, tt := range casesOk {
-		bytes, err := json.Marshal(tt)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		requestJson := string(bytes)
-		c, _ := GetEchoContext("/users", http.MethodPost, requestJson)
-		u := new(User)
-		assert.NoError(t, c.Bind(u))
-		assert.NoError(t, c.Validate(u))
-	}
+        casesOk := []struct {
+            testName string
+            user User
+        }{
+            {
+                testName: "Nameが一文字の場合",
+                user: User{ Name: "k", Email: "k@gmail.com"},
+            },
+//             {"aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeee",
+//                 "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeee@idcf.jp"},
+//             {"longEmail",
+//                 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@idcf.jp"},
+        }
+        for _, tt := range casesOk {
+	        t.Run(tt.testName, func(t *testing.T) {
+                bytes, err := json.Marshal(tt.user)
+                if err != nil {
+                    fmt.Println(err)
+                    return
+                }
+                requestJson := string(bytes)
+                c, _ := GetEchoContext("/users", http.MethodPost, requestJson)
+                u := new(User)
+                assert.NoError(t, c.Bind(u))
+                assert.NoError(t, c.Validate(u))
+	        })
+        }
 
 	// 種別：異常
 	casesNg := []struct {
@@ -168,28 +179,66 @@ func TestUsersHandler_Create(t *testing.T) {
 	//}
 }
 
+func ToJson(t *testing.T, i interface{}) string {
+	t.Helper()
+	bytes, err := json.Marshal(i)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(bytes)
+}
+
 func TestUsersHandler_Update(t *testing.T) {
-	requestJson := `{"name":"Joe","email":"joe2@idcf.jp"}`
-	c, rec := GetEchoContext("/users/:id", http.MethodPut, requestJson)
+	ctx := context.Background()
+	testDb, err := ConnectDatabase(testConfig)
+	if err != nil {
+		panic(err)
+	}
+	defer deleteUser(testDb)
+
+	user := models.User{Name: "Joe", Email: "joe@idcf.jp"}
+	err = user.Insert(ctx, testDb, boil.Whitelist("name", "email"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	requestUser := User{
+		ID: user.ID,
+		Name: "Joe",
+		Email: "joe2@idcf.jp",
+	}
+	requestString := ToJson(t, requestUser)
+
+	// requestJson := `{"name":"Joe","email":"joe2@idcf.jp"}`
+	c, rec := GetEchoContext("/users/:id", http.MethodPut, requestString)
 	c.SetParamNames("id")
-	c.SetParamValues("2")
+	c.SetParamValues(strconv.Itoa(user.ID))
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	u := NewMockUsersInterface(ctrl)
-	u.EXPECT().FindById(gomock.Any(), 2).Return(&User{
-		ID:    2,
-		Name:  "Joe",
-		Email: "joe@idcf.jp",
-	}, nil)
+	u := NewUser(testDb)
+// 	u := NewMockUsersInterface(ctrl)
+// 	u.EXPECT().FindById(gomock.Any(), 2).Return(&User{
+// 		ID:    2,
+// 		Name:  "Joe",
+// 		Email: "joe@idcf.jp",
+// 	}, nil)
 	h := NewUsersHandler(u)
 
 	// Assertion
-	want := `{"id":2,"name":"Joe","email":"joe2@idcf.jp"}`
+	// want := `{"id":2,"name":"Joe","email":"joe2@idcf.jp"}`
 	if assert.NoError(t, h.Update(c)) {
-		assert.Equal(t, http.StatusCreated, rec.Code)
-		assert.Equal(t, want, strings.TrimSpace(rec.Body.String()))
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, requestString, strings.TrimSpace(rec.Body.String()))
+
+		updatedUser, err := models.Users(qm.Where("id=?", user.ID)).One(ctx, testDb)
+		if err != nil {
+			log.Fatal(err)
+		}
+		want := requestUser
+		assert.Equal(t, want.Name, updatedUser.Name)
+		assert.Equal(t, want.Email, updatedUser.Email)
 	}
 }
 
