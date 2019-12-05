@@ -8,9 +8,9 @@ import (
 type Config struct {
 	Username string
 	Password string
-	Host string
+	Host     string
 	Database string
-	Port int
+	Port     int
 }
 
 func ConnectDatabase(c Config) (*sql.DB, error) {
