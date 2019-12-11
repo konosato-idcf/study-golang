@@ -3,7 +3,7 @@ package main
 import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/konosato-idcf/study-golang/echo-OJT-webApp/user"
+	"github.com/konosato-idcf/study-golang/echo-OJT-webApp/app/user"
 	"github.com/labstack/echo/v4"
 	"gopkg.in/go-playground/validator.v9"
 )
