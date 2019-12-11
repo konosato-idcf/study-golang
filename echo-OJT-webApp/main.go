@@ -9,7 +9,7 @@ import (
 )
 
 type CustomValidator struct {
-validator *validator.Validate
+	validator *validator.Validate
 }
 
 func (cv *CustomValidator) Validate(i interface{}) error {
@@ -17,26 +17,26 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 }
 
 func main() {
-e := echo.New()
-e.Validator = &CustomValidator{validator: validator.New()}
+	e := echo.New()
+	e.Validator = &CustomValidator{validator: validator.New()}
 
-// Open handle to database like normal
-db, err := sql.Open("mysql", "admin:himitu@tcp(localhost:13306)/sample_app")
-if err != nil {
-e.Logger.Fatal(err.Error())
-}
+	// Open handle to database like normal
+	db, err := sql.Open("mysql", "admin:himitu@tcp(localhost:13306)/sample_app")
+	if err != nil {
+		e.Logger.Fatal(err.Error())
+	}
 
-// ユーザーテーブルにアクセスするモデル
-u := user.NewUser(db)
+	// ユーザーテーブルにアクセスするモデル
+	u := user.NewUser(db)
 
-// ハンドラーの生成
-userHandler := user.NewUsersHandler(u)
+	// ハンドラーの生成
+	userHandler := user.NewUsersHandler(u)
 
-// ルーティング
-e.GET("/users", userHandler.Index)
-e.POST("/users", userHandler.Create)
-e.PUT("/users/:id", userHandler.Update)
-e.DELETE("/users/:id", userHandler.Delete)
+	// ルーティング
+	e.GET("/users", userHandler.Index)
+	e.POST("/users", userHandler.Create)
+	e.PUT("/users/:id", userHandler.Update)
+	e.DELETE("/users/:id", userHandler.Delete)
 
-e.Logger.Fatal(e.Start(":1323"))
+	e.Logger.Fatal(e.Start(":1323"))
 }

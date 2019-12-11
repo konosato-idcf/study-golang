@@ -1,4 +1,4 @@
-module github.com/konosato-idcf/study-golang
+module github.com/konosato-idcf/study-golang/echo-OJT-webApp
 
 go 1.13
 
