@@ -23,7 +23,7 @@ func NewUsersHandler(user UsersInterface) *UsersHandler {
 // GET("/users", userHandler.Index)
 func (h *UsersHandler) Index(c echo.Context) error {
 	ctx := context.Background()
-	users, err := h.Users.All(ctx)
+	users, err := All(ctx)
 	if err != nil {
 		c.Logger().Fatal(err.Error())
 	}
@@ -53,7 +53,7 @@ func (h UsersHandler) Create(c echo.Context) error {
 	}
 
 	ctx := context.Background()
-	u, err := h.Users.Create(ctx, u)
+	u, err := Create(ctx, u)
 	if err != nil {
 		c.Logger().Fatal(err.Error())
 	}
@@ -83,7 +83,7 @@ func (h UsersHandler) Update(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, message)
 	}
 	ctx := context.Background()
-	_, err = h.Users.FindById(ctx, id)
+	_, err = FindById(ctx, id)
 	if err != nil {
 		message := &Message{
 			Message: fmt.Sprintf("The user id:%d does not exist.", id),
@@ -92,7 +92,7 @@ func (h UsersHandler) Update(c echo.Context) error {
 	}
 
 	// Update
-	rowsAff, err := h.Users.Update(ctx, u)
+	rowsAff, err := Update(ctx, u)
 	if err != nil {
 		return err
 	}
@@ -115,7 +115,7 @@ func (h UsersHandler) Delete(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, message)
 	}
 	ctx := context.Background()
-	u, err := h.Users.FindById(ctx, id)
+	u, err := FindById(ctx, id)
 	if err != nil {
 		message := &Message{
 			Message: fmt.Sprintf("The user id:%d does not exist.", id),
@@ -124,7 +124,7 @@ func (h UsersHandler) Delete(c echo.Context) error {
 	}
 
 	// Delete
-	rowsAff, err := h.Users.Delete(ctx, u)
+	rowsAff, err := Delete(ctx, u)
 	if err != nil {
 		return err
 	}

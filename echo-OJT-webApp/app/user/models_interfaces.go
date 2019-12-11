@@ -5,10 +5,10 @@
 package user
 
 import (
-	context "context"
-	gomock "github.com/golang/mock/gomock"
-	models "github.com/konosato-idcf/study-golang/echo-OJT-webApp/user/infra/models"
-	reflect "reflect"
+	"context"
+	"github.com/golang/mock/gomock"
+	models2 "github.com/konosato-idcf/study-golang/echo-OJT-webApp/app/user/infra/models"
+	"reflect"
 )
 
 // MockUsersInterface is a mock of UsersInterface interface
@@ -35,10 +35,10 @@ func (m *MockUsersInterface) EXPECT() *MockUsersInterfaceMockRecorder {
 }
 
 // All mocks base method
-func (m *MockUsersInterface) All(arg0 context.Context) (models.UserSlice, error) {
+func (m *MockUsersInterface) All(arg0 context.Context) (models2.UserSlice, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "All", arg0)
-	ret0, _ := ret[0].(models.UserSlice)
+	ret0, _ := ret[0].(models2.UserSlice)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

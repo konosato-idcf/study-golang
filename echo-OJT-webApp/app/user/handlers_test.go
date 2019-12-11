@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/konosato-idcf/study-golang/echo-OJT-webApp/user/infra/models"
+	models2 "github.com/konosato-idcf/study-golang/echo-OJT-webApp/app/user/infra/models"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 	"github.com/stretchr/testify/assert"
@@ -191,7 +191,7 @@ func TestUsersHandler_Read(t *testing.T) {
 		/ 内容：-
 	*/
 	ctx := context.Background()
-	preUser := models.User{Name: "Joe", Email: "joe@idcf.jp"}
+	preUser := models2.User{Name: "Joe", Email: "joe@idcf.jp"}
 	err = preUser.Insert(ctx, testDb, boil.Whitelist("name", "email"))
 	if err != nil {
 		t.Fatal(err)
@@ -222,7 +222,7 @@ func TestUsersHandler_Read(t *testing.T) {
 
 		// DBのユーザーテーブルの値の確認
 		ctx := context.Background()
-		user, err := models.Users(qm.Where("id=?", responseUser[0].ID)).One(ctx, testDb)
+		user, err := models2.Users(qm.Where("id=?", responseUser[0].ID)).One(ctx, testDb)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -274,7 +274,7 @@ func TestUsersHandler_Create(t *testing.T) {
 
 		// DBのユーザーテーブルの値の確認
 		ctx := context.Background()
-		user, err := models.Users(qm.Where("id=?", responseUser.ID)).One(ctx, testDb)
+		user, err := models2.Users(qm.Where("id=?", responseUser.ID)).One(ctx, testDb)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -325,7 +325,7 @@ func TestUsersHandler_Update(t *testing.T) {
 		/ 種別：正常
 		/ 内容：-
 	*/
-	preUser := models.User{Name: "Joe", Email: "joe@idcf.jp"}
+	preUser := models2.User{Name: "Joe", Email: "joe@idcf.jp"}
 	err = preUser.Insert(ctx, testDb, boil.Whitelist("name", "email"))
 	if err != nil {
 		t.Fatal(err)
@@ -350,7 +350,7 @@ func TestUsersHandler_Update(t *testing.T) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 		assert.Equal(t, requestJson, strings.TrimSpace(rec.Body.String()))
 
-		updatedUser, err := models.Users(qm.Where("id=?", preUser.ID)).One(ctx, testDb)
+		updatedUser, err := models2.Users(qm.Where("id=?", preUser.ID)).One(ctx, testDb)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -452,7 +452,7 @@ func TestUsersHandler_Delete(t *testing.T) {
 		/ 種別：正常
 		/ 内容；-
 	*/
-	user := models.User{Name: "Joe", Email: "joe@idcf.jp"}
+	user := models2.User{Name: "Joe", Email: "joe@idcf.jp"}
 	err = user.Insert(ctx, testDb, boil.Whitelist("name", "email"))
 	if err != nil {
 		t.Fatal(err)
@@ -469,7 +469,7 @@ func TestUsersHandler_Delete(t *testing.T) {
 	if assert.NoError(t, h.Delete(c)) {
 		assert.Equal(t, http.StatusNoContent, rec.Code)
 
-		deletedUser, err := models.Users(qm.Where("id=?", user.ID)).One(ctx, testDb)
+		deletedUser, err := models2.Users(qm.Where("id=?", user.ID)).One(ctx, testDb)
 		if err != nil {
 			if fmt.Sprint(err) != "sql: no rows in result set" {
 				log.Fatal(err)
@@ -534,7 +534,7 @@ func TestMain(m *testing.M) {
 }
 
 func deleteUser(db *sql.DB) {
-	_, err := models.Users().DeleteAll(context.Background(), db)
+	_, err := models2.Users().DeleteAll(context.Background(), db)
 	if err != nil {
 		fmt.Println(err)
 	}

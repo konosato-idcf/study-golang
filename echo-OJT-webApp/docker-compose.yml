@@ -1,5 +1,10 @@
 version: '3'
 services:
+  app:
+    build: ./app
+    container_name: echo-container
+    ports:
+      - "1323:1323"
   db:
     build: ./mysql
     container_name: mysql-container
