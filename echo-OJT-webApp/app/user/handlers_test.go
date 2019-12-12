@@ -45,7 +45,7 @@ func GetEchoContext(path string, requestMethod string, requestJson string) (*ech
 func generateTestEmail(domain string, length int) string {
 	accountLength := length - (len(domain) + 1)
 	account := strings.Repeat("a", accountLength)
-	return account + "@"  + domain
+	return account + "@" + domain
 }
 
 // https://github.com/golang/go/wiki/TableDrivenTests
@@ -71,15 +71,15 @@ func TestUsersHandler_Validation(t *testing.T) {
 		{
 			testName: "Nameが45文字の場合",
 			user: User{
-				Name:  "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeee",
-				Email: "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeee@idcf.jp",
+				Name: "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeee",
+				// Email: "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeee@idcf.jp",
+				Email: generateTestEmail("idcf.jo", 45),
 			},
 		},
 		{
 			testName: "Emailが255文字の場合",
 			user: User{
 				Name:  "longEmail",
-				// Email: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@idcf.jp",
 				Email: generateTestEmail("idcf.jp", 255),
 			},
 		},
@@ -134,7 +134,6 @@ func TestUsersHandler_Validation(t *testing.T) {
 			testName: "Emailが256文字の場合",
 			user: User{
 				Name:  "tooLongEmail",
-				// Email: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@idcf.jp",
 				Email: generateTestEmail("idcf.jp", 256),
 			},
 		},
