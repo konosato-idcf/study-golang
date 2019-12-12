@@ -1,4 +1,4 @@
 .idea
 echo-OJT-webApp/log
 echo-OJT-webApp/mysql/data
-/echo-OJT-webApp/install-realize.sh
+/echo-OJT-webApp/app/install-realize.sh

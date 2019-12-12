@@ -10,7 +10,7 @@ LABEL maintainer="Kataru Onosato <konosato@idcf.jp>"
 WORKDIR /app
 
 # Copy go mod and sum files
-COPY ../go.mod go.sum ./
+COPY go.mod go.sum install-realize.sh sqlboiler.toml ./
 
 # Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
 RUN go mod download
@@ -22,7 +22,7 @@ COPY . .
 RUN go build -o main .
 
 # Expose port 1323 to the outside world
-EXPOSE 1323
+EXPOSE 13231
 
 # Command to run the executable
-CMD ["./main"]
+#CMD ["./main.go"]

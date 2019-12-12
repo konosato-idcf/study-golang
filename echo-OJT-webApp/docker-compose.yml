@@ -3,8 +3,7 @@ services:
   app:
     build: ./app
     container_name: echo-container
-    ports:
-      - "1323:1323"
+    command: bash -c "go run main.go"
   db:
     build: ./mysql
     container_name: mysql-container
