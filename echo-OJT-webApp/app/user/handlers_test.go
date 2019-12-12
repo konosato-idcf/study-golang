@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	models2 "github.com/konosato-idcf/study-golang/echo-OJT-webApp/app/user/infra/models"
@@ -41,6 +42,12 @@ func GetEchoContext(path string, requestMethod string, requestJson string) (*ech
 	return e, c, rec
 }
 
+func generateTestEmail(domain string, length int) string {
+	accountLength := length - (len(domain) + 1)
+	account := strings.Repeat("a", accountLength)
+	return account + "@"  + domain
+}
+
 // https://github.com/golang/go/wiki/TableDrivenTests
 // https://qiita.com/yut-kt/items/5f9eb752f40d4d2a2e97
 func TestUsersHandler_Validation(t *testing.T) {
@@ -72,7 +79,8 @@ func TestUsersHandler_Validation(t *testing.T) {
 			testName: "Emailが255文字の場合",
 			user: User{
 				Name:  "longEmail",
-				Email: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@idcf.jp",
+				// Email: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@idcf.jp",
+				Email: generateTestEmail("idcf.jp", 255),
 			},
 		},
 	}
@@ -126,7 +134,8 @@ func TestUsersHandler_Validation(t *testing.T) {
 			testName: "Emailが256文字の場合",
 			user: User{
 				Name:  "tooLongEmail",
-				Email: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@idcf.jp",
+				// Email: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@idcf.jp",
+				Email: generateTestEmail("idcf.jp", 256),
 			},
 		},
 		{
@@ -471,7 +480,10 @@ func TestUsersHandler_Delete(t *testing.T) {
 
 		deletedUser, err := models2.Users(qm.Where("id=?", user.ID)).One(ctx, testDb)
 		if err != nil {
-			if fmt.Sprint(err) != "sql: no rows in result set" {
+			//if fmt.Sprint(err) != "sql: no rows in result set" {
+			//	log.Fatal(err)
+			//}
+			if !errors.Is(sql.ErrNoRows, err) {
 				log.Fatal(err)
 			}
 		}
@@ -479,7 +491,8 @@ func TestUsersHandler_Delete(t *testing.T) {
 	}
 
 	/*
-		/ カテゴリー：削除処理
+		/ カテゴリー：削除処理 {
+
 		/ サブカテゴリー：DB接続
 		/ 種別：削除
 		/ 内容；DBに登録されていないIDを指定してリクエストを送る
