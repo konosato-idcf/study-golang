@@ -2,18 +2,23 @@ version: '3'
 services:
   app:
     build: ./app
-    container_name: echo-container
-    command: bash -c "go run main.go"
+    command: ["go", "run", "main.go"]
+    tty: true
+    stdin_open: true
+    depends_on:
+      - db
+    ports:
+    - 1323:1323
   db:
     build: ./mysql
-    container_name: mysql-container
     ports:
-      - "13306:3306"
+      - "33060:3306"
     volumes:
       - ./mysql/initdb.d:/docker-entrypoint-initdb.d
       - ./mysql/conf.d/my.cnf:/etc/mysql/conf.d/my.cnf
       - ./mysql/data:/var/lib/mysql
       - ./log/mysql:/var/log/mysql
+    restart: always
     environment:
       MYSQL_DATABASE: sample_app
       MYSQL_USER: admin

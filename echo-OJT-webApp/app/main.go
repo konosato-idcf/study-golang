@@ -21,7 +21,7 @@ func main() {
 	e.Validator = &CustomValidator{validator: validator.New()}
 
 	// Open handle to database like normal
-	db, err := sql.Open("mysql", "admin:himitu@tcp(localhost:13306)/sample_app")
+	db, err := sql.Open("mysql", "admin:himitu@tcp(db:3306)/sample_app")
 	if err != nil {
 		e.Logger.Fatal(err.Error())
 	}
@@ -38,5 +38,5 @@ func main() {
 	e.PUT("/users/:id", userHandler.Update)
 	e.DELETE("/users/:id", userHandler.Delete)
 
-	e.Logger.Fatal(e.Start(":11323"))
+	e.Logger.Fatal(e.Start(":1323"))
 }
